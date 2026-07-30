@@ -2,7 +2,7 @@
 #include <windows.h>
 #include <stdint.h>
 #include <math.h>
-
+#include "detection/heuristic.h"
 
 
 // Valider le header PE (MZ + PE\0\0)
@@ -25,8 +25,8 @@ int PE_IsValid(uint8_t *data, size_t size) {
     return 0;
 }
 
-// Extraire les noms des sections + leur entropie
-int PE_ParseSections(uint8_t *data, size_t size){
+// Extraire les noms des sections + leur entropie -> scanResult
+int PE_ParseSections(uint8_t *data, size_t size, ScanResult *result){
 
     /*
     
@@ -67,6 +67,9 @@ int PE_ParseSections(uint8_t *data, size_t size){
                 double p = (double)freq[j] / SizeOfRawData;
                 entropy -= p * log2(p);
             }
+        }
+        if (entropy > result->entropy) {
+            result->entropy = entropy;
         }
         printf("Section: %s, Entropy: %.4f\n", sectionName, entropy);
     }
