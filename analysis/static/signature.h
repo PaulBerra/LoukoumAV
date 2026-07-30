@@ -3,8 +3,18 @@
 #define SIGNATURE_H
 
 typedef struct {
-    char hash[65];      // SHA256 hex + \0
-    char malwareName[128];  // nom du malware
+    /* 
+    
+    Structure pour stocker une signature 
+    Structure to store a signature 
+    
+    hash: SHA256 hash of the malware file in hexadecimal format + null terminator
+    malwareName: Name of the malware associated with the hash
+
+    */
+
+    char hash[65];  
+    char malwareName[128];
 } SignatureEntry;
 
 int loadCSV(const char* filename, SignatureEntry** entries, int* entryCount);
