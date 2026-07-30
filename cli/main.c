@@ -69,7 +69,7 @@ int main(int argc, char *argv[]) {
     int score = computeScore(&result);
 
 
-    if (score > 70) {
+    if (score > MAX_SCORE) {
         printf("\n\n\nVerdict : \n");
         printf("Malware detected in %s\n", filePath);
     }

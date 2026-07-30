@@ -6,5 +6,5 @@
 #define ALERT_THRESHOLD 60
 #define ENTROPY_THRESHOLD 7.1
 #define CSV_PATH "rules\\signatures\\hashes.csv"
-
+#define MAX_SCORE 70
 #endif

@@ -2,7 +2,18 @@
 #include "heuristic.h"
 
 int computeScore(const ScanResult *result) {
-
+    /*
+    Computes a threat score based on the collected scan results.
+    Inputs  : pointer to a filled ScanResult struct
+    Outputs : integer score (0 = clean, 100+ = likely malware)
+    Actions : weights each indicator and returns the cumulative score
+            - signature match : +100
+            - suspicious imports (1-3) : +60
+            - suspicious imports (>3)  : +100
+            - suspicious sections (>2) : +40
+            - high entropy (>= 7.1)    : +30
+    */
+   
     int score = 0;
 
     if (result->signatureMatch > 0) {
