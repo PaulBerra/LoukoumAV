@@ -1,5 +1,5 @@
 // Interface ligne de commande
-
+// cl.exe cli/main.c utils/hash.c analysis/static/signature.c /I"." /I"C:\vcpkg\installed\x64-windows-static\include" /link C:\vcpkg\installed\x64-windows-static\lib\mbedcrypto.lib
 #include <stdio.h>
 #include <stdlib.h>
 #include "utils/hash.h"
@@ -32,7 +32,7 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
 
-    printf("SHA256 Hash en cours de traitement: %s\n file: %s", hashOutput, filePath);
+    printf("SHA256 Hash en cours de traitement: %s\n file: %s \n", hashOutput, filePath);
 
     SignatureEntry *signatures = NULL;
     int signatureCount = 0;
