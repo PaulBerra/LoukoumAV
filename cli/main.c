@@ -15,7 +15,7 @@ int main(int argc, char *argv[]) {
     const char *filePath = argv[1];
     printf("Processing file: %s\n", filePath);
 
-
+    
     uint8_t *fileData = NULL;
     size_t fileSize = 0;
 
@@ -23,6 +23,24 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "Failed to read file: %s\n", filePath);
         return EXIT_FAILURE;
     }
+
+    if (PE_IsValid(fileData, fileSize) != 0) {
+        fprintf(stderr, "Invalid PE file: %s\n", filePath);
+        free(fileData);
+        return EXIT_FAILURE;
+    }
+    printf("Valid PE file: %s\n", filePath);
+
+    if (PE_ParseSections(fileData, fileSize) != 0) {
+        fprintf(stderr, "Failed to parse PE sections for file: %s\n", filePath);
+        free(fileData);
+        return EXIT_FAILURE;
+    }
+    printf("PE sections parsed successfully for file: %s\n", filePath);
+
+
+
+
 
     uint8_t hashOutput[65] = {0}; // 64 characters for SHA256 in hex + null terminator
     
