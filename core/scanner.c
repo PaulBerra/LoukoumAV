@@ -14,9 +14,13 @@
 FileType DetectFileType(uint8_t *data, size_t size) {
     
     /*
-
-
-
+    Identifies the type of a file by inspecting its magic bytes.
+    Inputs  : data - pointer to the file buffer
+              size - size of the buffer in bytes
+    Outputs : FileType enum value (FILE_TYPE_PE, FILE_TYPE_PDF, etc.)
+              FILE_TYPE_UKNW if the type cannot be determined
+    Actions : checks the first 4 bytes against known magic numbers
+              and returns the corresponding file type
     */
 
     if (size < 4 ) return FILE_TYPE_UKNW;
@@ -37,6 +41,17 @@ FileType DetectFileType(uint8_t *data, size_t size) {
 
 int Scanner_ScanFile(const char* filePath, ScanResult *result) {
 
+    /*
+    Orchestrates the full scan pipeline for a given file.
+    Inputs  : filePath - path to the file to scan
+            result   - pointer to a ScanResult struct to fill
+    Outputs : cumulative threat score (0 = clean, 100+ = likely malware)
+            -1 on error
+    Actions : reads file into memory, computes SHA256 hash, checks signature DB,
+            detects file type, routes to appropriate parsers (PE sections, imports),
+            computes and returns heuristic score
+    */
+
     uint8_t *fileData = NULL;
     size_t fileSize = 0;
 
@@ -44,10 +59,6 @@ int Scanner_ScanFile(const char* filePath, ScanResult *result) {
         fprintf(stderr, "Failed to read file: %s\n", filePath);
         return EXIT_FAILURE;
     }
-
-
-
-
 
     uint8_t hashOutput[65] = {0}; // 64 characters for SHA256 in hex + null terminator
     
@@ -67,16 +78,12 @@ int Scanner_ScanFile(const char* filePath, ScanResult *result) {
         free(fileData);
         return EXIT_FAILURE;
     }
-
     result->signatureMatch = lookupHash((const char*)hashOutput, signatures, signatureCount) ? 1 : 0;
 
 
-
     FileType file = DetectFileType(fileData, fileSize);
-
     switch (file) {
         case FILE_TYPE_PE:
-        
             if (PE_IsValid(fileData, fileSize) != 0) {
                 free(fileData);
                 free(signatures);
@@ -87,7 +94,11 @@ int Scanner_ScanFile(const char* filePath, ScanResult *result) {
                 free(signatures);
                 return -1;
             }
-            
+            if (PE_ParseImports(fileData, fileSize, result) != 0) {
+                free(fileData);
+                free(signatures);
+                return -1;
+            }
             break;
         case FILE_TYPE_PDF:
 
@@ -118,6 +129,7 @@ int Scanner_ScanFile(const char* filePath, ScanResult *result) {
     }
 
     int score = computeScore(result);
+
 
     free(fileData);
     free(signatures);

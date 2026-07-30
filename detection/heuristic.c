@@ -2,6 +2,7 @@
 #include "heuristic.h"
 
 int computeScore(const ScanResult *result) {
+    
     /*
     Computes a threat score based on the collected scan results.
     Inputs  : pointer to a filled ScanResult struct
@@ -20,15 +21,6 @@ int computeScore(const ScanResult *result) {
         score = score + 100;
     }
 
-    //if (result->invalidPEHeader) //inutile on a un exit failure si pas ok 
-
-    if (result->suspiciousImports > 1 && result->suspiciousImports <= 3){
-        score = score + 60;
-    }
-    if (result->suspiciousImports > 3 ) {
-        score = score + 100;
-    }
-
     if (result->suspiciousSections > 2) {
         score = score + 40;
     }
@@ -36,5 +28,18 @@ int computeScore(const ScanResult *result) {
     if (result->entropy >= 7.1) {
         score = score + 30;
     }
+
+    if (result->detectedImportCount > 0 && result->detectedImportCount <= 2) {
+        score += 15;
+    }
+
+    if (result->detectedImportCount > 2 &&  result->detectedImportCount < 4) {
+        score = score + 50;
+    }
+
+    if (result->detectedImportCount > 5 ) {
+        score = score + 100;
+    }
+
     return score;
 }

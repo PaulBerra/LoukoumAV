@@ -18,6 +18,8 @@ typedef struct ScanResult {
     int suspiciousSections;
     int invalidPEHeader;
     int signatureMatch;
+    char detectedImports[32][64];
+    int detectedImportCount;
 } ScanResult;
 
 int computeScore(const ScanResult *result);

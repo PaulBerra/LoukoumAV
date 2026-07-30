@@ -3,6 +3,7 @@
 #define PE_PARSER_H
 
 #include <stdint.h>
+
 #include "detection/heuristic.h"
 
 // Valider le header PE (MZ + PE\0\0)
@@ -12,6 +13,6 @@ int PE_IsValid(uint8_t *data, size_t size);
 int PE_ParseSections(uint8_t *data, size_t size, ScanResult *result);
 
 // Extraire les imports
-int PE_ParseImports(uint8_t *data, size_t size);
+int PE_ParseImports(uint8_t *data, size_t size, ScanResult *result);
 
 #endif

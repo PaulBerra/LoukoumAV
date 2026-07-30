@@ -3,7 +3,8 @@
 #include <stdint.h>
 #include <math.h>
 #include "detection/heuristic.h"
-
+#include <windows.h>
+#include "utils/config.h"
 
 // Valider le header PE (MZ + PE\0\0)
 int PE_IsValid(uint8_t *data, size_t size) {
@@ -77,4 +78,83 @@ int PE_ParseSections(uint8_t *data, size_t size, ScanResult *result){
 }
 
 // Extraire les imports
-int PE_ParseImports(uint8_t *data, size_t size);
+int PE_ParseImports(uint8_t *data, size_t size, ScanResult *result) {
+
+    /*
+    Parses the import table of a PE file and detects suspicious API calls.
+    Inputs  : data   - pointer to the file buffer
+            size   - size of the buffer in bytes
+            result - pointer to a ScanResult struct to fill
+    Outputs : 0 on success, -1 on error
+    Actions : iterates over IMAGE_IMPORT_DESCRIPTOR entries,
+            resolves DLL and function names via RVA-to-offset conversion,
+            compares each import against a list of suspicious API calls,
+            stores matches in result->detectedImports and increments
+            result->detectedImportCount
+    */
+    
+
+    IMAGE_DOS_HEADER *dosHeader = (IMAGE_DOS_HEADER*)data;
+    if (dosHeader->e_lfanew <= 0 || dosHeader->e_lfanew + sizeof(IMAGE_NT_HEADERS) > size) {
+        return -1;
+    }
+
+    IMAGE_NT_HEADERS *ntHeaders = (IMAGE_NT_HEADERS*)(data + dosHeader->e_lfanew);
+    if (ntHeaders->Signature != IMAGE_NT_SIGNATURE || dosHeader->e_magic != IMAGE_DOS_SIGNATURE) {
+        return -1;
+    }
+
+    IMAGE_DATA_DIRECTORY importDir = ntHeaders->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT];
+    IMAGE_SECTION_HEADER *sections = IMAGE_FIRST_SECTION(ntHeaders);
+
+    uint32_t importOffset  = RvaToOffset(importDir.VirtualAddress, sections, ntHeaders->FileHeader.NumberOfSections);
+    if (importOffset == -1) {
+        return -1;
+    }
+    IMAGE_IMPORT_DESCRIPTOR *importDesc = (IMAGE_IMPORT_DESCRIPTOR*)(data + importOffset);
+
+
+    
+    while(importDesc->Name != 0) {
+        uint32_t nameOffset  = RvaToOffset(importDesc->Name, sections, ntHeaders->FileHeader.NumberOfSections);
+        char *dllName = (char*)(data + nameOffset);
+        //printf("DLL: %s\n", dllName);
+
+        uint32_t thunkOffset = RvaToOffset(importDesc->OriginalFirstThunk, sections, ntHeaders->FileHeader.NumberOfSections);
+        if (thunkOffset == -1) {
+            return -1;
+        }
+        IMAGE_THUNK_DATA *thunk = (IMAGE_THUNK_DATA*)(data + thunkOffset);
+        
+        while (thunk->u1.AddressOfData != 0) {
+            // accéder au nom de la fonction
+            uint32_t funcOffset = RvaToOffset(thunk->u1.AddressOfData & 0x7FFFFFFF, sections, ntHeaders->FileHeader.NumberOfSections);
+            IMAGE_IMPORT_BY_NAME *funcName = (IMAGE_IMPORT_BY_NAME*)(data + funcOffset);
+            //printf("  -> %s\n", funcName->Name);
+
+            for (int i=0; SUSPICIOUS_IMPORTS[i] != NULL; i++) {
+                if (strcmp(funcName->Name, SUSPICIOUS_IMPORTS[i]) == 0) {
+                    //printf(" \n\n\nSupicious import detected : %s", funcName->Name);
+                    if (result->detectedImportCount < 32) {
+                        strncpy(result->detectedImports[result->detectedImportCount], funcName->Name, 63);
+                        result->detectedImports[result->detectedImportCount][63] = '\0';
+                        result->detectedImportCount++;
+                        }
+                    }
+            }
+            thunk++;
+        }
+        importDesc++;
+    }
+    return 0;
+}
+
+
+static RvaToOffset(uint32_t rva, IMAGE_SECTION_HEADER *sections, int numSections) {
+    for (int i = 0; i < numSections; i++)
+        if (rva >= sections[i].VirtualAddress && rva < sections[i].VirtualAddress + sections[i].SizeOfRawData) {
+            uint32_t offset = rva - sections[i].VirtualAddress + sections[i].PointerToRawData;
+            return offset;
+        }
+    return -1;
+}

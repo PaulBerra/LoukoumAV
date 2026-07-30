@@ -8,3 +8,10 @@
 #define CSV_PATH "rules\\signatures\\hashes.csv"
 #define MAX_SCORE 70
 #endif
+
+static const char *SUSPICIOUS_IMPORTS[] = {
+    "VirtualAlloc", "VirtualProtect",
+    "WriteProcessMemory", "CreateRemoteThread",
+    "LoadLibrary", "GetProcAddress",
+    NULL
+};
