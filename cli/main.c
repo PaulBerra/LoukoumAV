@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "utils/hash.h"
+#include "analysis/static/signature.h"
 
 int main(int argc, char *argv[]) {
     // Vérification du nombre d'arguments
@@ -31,9 +32,26 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
 
-    printf("SHA256 Hash: %s\n", hashOutput);
+    printf("SHA256 Hash en cours de traitement: %s\n file: %s", hashOutput, filePath);
+
+    SignatureEntry *signatures = NULL;
+    int signatureCount = 0;
+
+    if (loadCSV("rules\\signatures\\hashes.csv", &signatures, &signatureCount) != 0) {
+        fprintf(stderr, "Failed to load signatures\n");
+        free(fileData);
+        return EXIT_FAILURE;
+    }
+
+    const SignatureEntry *match = lookupHash((const char*)hashOutput, signatures, signatureCount);
+    if (match != NULL) {
+        printf("Malware detected: %s\n",match->malwareName);
+    } else {
+        printf("No malware detected for file: %s\n", filePath);
+    }
 
     free(fileData);
+    free(signatures);
 
     return EXIT_SUCCESS;
 }
