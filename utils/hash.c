@@ -2,6 +2,8 @@
 #include "hash.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <ctype.h>
+
 #include <mbedtls/sha256.h>
 
 int ComputeHash(uint8_t *ptableau, size_t tableauSize, const char* hashType, uint8_t *outHashBuffer, size_t outHashSize) {
@@ -14,6 +16,8 @@ int ComputeHash(uint8_t *ptableau, size_t tableauSize, const char* hashType, uin
     */
 
     uint8_t hash[32]; // SHA256 produces a 32-byte hash
+
+    // normalisation du hash
     int success = mbedtls_sha256(ptableau, tableauSize, hash, 0); // 0 for SHA-256
     if (success != 0) {
         return -1;
@@ -21,6 +25,9 @@ int ComputeHash(uint8_t *ptableau, size_t tableauSize, const char* hashType, uin
 
     for (int i = 0; i < 32; i++) { // ecris le hash dans outHashBuffer
         sprintf(outHashBuffer + i*2, "%02x", hash[i]);
+        for (int j = 0; j < 2; j++) {
+            outHashBuffer[i*2 + j] = toupper(outHashBuffer[i*2 + j]);
+        }
     }
     return 0;
 }
@@ -31,7 +38,7 @@ int ReadFileBytes(const char* filename, uint8_t **buffer, size_t* bufferSize) {
     
     Lit un fichier et stocke son contenu dans un tableau de bytes
     Reads a file and stores its content in a byte array
-    
+
     */
 
     FILE* file = NULL;
