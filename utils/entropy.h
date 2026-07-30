@@ -1,0 +1,1 @@
+// Calcul d'entropie de Shannon

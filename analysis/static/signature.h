@@ -1,0 +1,1 @@
+// Comparaison hash (MD5/SHA256)

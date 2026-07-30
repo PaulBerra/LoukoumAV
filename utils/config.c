@@ -1,0 +1,1 @@
+// Fichier de config (JSON/INI)
