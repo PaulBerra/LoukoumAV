@@ -1,5 +1,8 @@
 *.
 *.obj
 *.pdb
-build/
 .vscode/
+*.exe
+build/
+
+

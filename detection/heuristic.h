@@ -20,6 +20,8 @@ typedef struct ScanResult {
     int signatureMatch;
     char detectedImports[32][64];
     int detectedImportCount;
+    char yaraMatches[16][128];
+    int yaraMatchCount;
 } ScanResult;
 
 int computeScore(const ScanResult *result);

@@ -16,7 +16,7 @@ static const char *SUSPICIOUS_IMPORTS[] = {
     NULL
 };
 
-const char *PATTERNS[] = {
+static const char *PATTERNS[] = {
     "http://", "https://",
     "cmd.exe", "powershell",
     "HKEY_", "%%APPDATA%%",
