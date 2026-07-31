@@ -7,7 +7,7 @@
 #include "detection/heuristic.h"
 #include "utils/config.h"
 #include "core/scanner.h"
-
+#include "core/report.h"
 
 int main(int argc, char *argv[]) {
     /*
@@ -41,5 +41,8 @@ int main(int argc, char *argv[]) {
         printf("fichier propre\n dangerosité estimée : %d%%\n", score);
     }
 
+    printf("Generation du rapport...");
+    Report_Generate(filePath, &result, score, "report.json");
+    
     return EXIT_SUCCESS;
 }

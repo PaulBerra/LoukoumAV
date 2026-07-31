@@ -18,6 +18,7 @@ add_executable(loukoumav
     analysis/static/strings_extract.c
     detection/heuristic.c
     core/scanner.c
+    core/report.c
 )
 
 target_link_libraries(loukoumav
