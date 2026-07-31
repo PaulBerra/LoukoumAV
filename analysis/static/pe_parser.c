@@ -6,6 +6,16 @@
 #include <windows.h>
 #include "utils/config.h"
 
+
+static uint32_t  RvaToOffset(uint32_t rva, IMAGE_SECTION_HEADER *sections, int numSections) {
+    for (int i = 0; i < numSections; i++)
+        if (rva >= sections[i].VirtualAddress && rva < sections[i].VirtualAddress + sections[i].SizeOfRawData) {
+            uint32_t offset = rva - sections[i].VirtualAddress + sections[i].PointerToRawData;
+            return offset;
+        }
+    return -1;
+}
+
 // Valider le header PE (MZ + PE\0\0)
 int PE_IsValid(uint8_t *data, size_t size) {
     /*
@@ -92,7 +102,7 @@ int PE_ParseImports(uint8_t *data, size_t size, ScanResult *result) {
             stores matches in result->detectedImports and increments
             result->detectedImportCount
     */
-
+    printf("DEBUG: entering PE_ParseImports\n");
     IMAGE_DOS_HEADER *dosHeader = (IMAGE_DOS_HEADER*)data;
     if (dosHeader->e_lfanew <= 0 || dosHeader->e_lfanew + sizeof(IMAGE_NT_HEADERS) > size) {
         return -1;
@@ -107,6 +117,7 @@ int PE_ParseImports(uint8_t *data, size_t size, ScanResult *result) {
     IMAGE_SECTION_HEADER *sections = IMAGE_FIRST_SECTION(ntHeaders);
 
     uint32_t importOffset  = RvaToOffset(importDir.VirtualAddress, sections, ntHeaders->FileHeader.NumberOfSections);
+    //printf("DEBUG: importOffset = %u\n", importOffset);
     if (importOffset == -1) {
         return -1;
     }
@@ -115,20 +126,31 @@ int PE_ParseImports(uint8_t *data, size_t size, ScanResult *result) {
     
     while(importDesc->Name != 0) {
         uint32_t nameOffset  = RvaToOffset(importDesc->Name, sections, ntHeaders->FileHeader.NumberOfSections);
+        //printf("DEBUG: nameOffset = %u\n", nameOffset);
+
         char *dllName = (char*)(data + nameOffset);
-        //printf("DLL: %s\n", dllName);
+        //printf("DEBUG: DLL loop, name RVA = %u\n", importDesc->Name);
 
         uint32_t thunkOffset = RvaToOffset(importDesc->OriginalFirstThunk, sections, ntHeaders->FileHeader.NumberOfSections);
+        //printf("DEBUG: thunkOffset = %u\n", thunkOffset);
         if (thunkOffset == -1) {
-            return -1;
+                importDesc++;
+                continue;  // passe à la DLL suivante au lieu de crash
         }
         IMAGE_THUNK_DATA *thunk = (IMAGE_THUNK_DATA*)(data + thunkOffset);
         
         while (thunk->u1.AddressOfData != 0) {
+            //printf("DEBUG: thunk AddressOfData = %llu\n", thunk->u1.AddressOfData);
             // accéder au nom de la fonction
-            uint32_t funcOffset = RvaToOffset(thunk->u1.AddressOfData & 0x7FFFFFFF, sections, ntHeaders->FileHeader.NumberOfSections);
+            uint32_t funcOffset = RvaToOffset(thunk->u1.AddressOfData, sections, ntHeaders->FileHeader.NumberOfSections);
             IMAGE_IMPORT_BY_NAME *funcName = (IMAGE_IMPORT_BY_NAME*)(data + funcOffset);
             //printf("  -> %s\n", funcName->Name);
+
+            if (thunk->u1.Ordinal & IMAGE_ORDINAL_FLAG) {
+                // import par ordinal, on skip
+                thunk++;
+                continue;
+            }
 
             for (int i=0; SUSPICIOUS_IMPORTS[i] != NULL; i++) {
                 if (strcmp(funcName->Name, SUSPICIOUS_IMPORTS[i]) == 0) {
@@ -144,15 +166,8 @@ int PE_ParseImports(uint8_t *data, size_t size, ScanResult *result) {
         }
         importDesc++;
     }
+    //printf("DEBUG: end of PE_ParseImports\n");
     return 0;
 }
 
 
-static RvaToOffset(uint32_t rva, IMAGE_SECTION_HEADER *sections, int numSections) {
-    for (int i = 0; i < numSections; i++)
-        if (rva >= sections[i].VirtualAddress && rva < sections[i].VirtualAddress + sections[i].SizeOfRawData) {
-            uint32_t offset = rva - sections[i].VirtualAddress + sections[i].PointerToRawData;
-            return offset;
-        }
-    return -1;
-}
