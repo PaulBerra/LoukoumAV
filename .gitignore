@@ -4,5 +4,8 @@
 .vscode/
 *.exe
 build/
+*.lib
+*.def
+*.exp
 
 
