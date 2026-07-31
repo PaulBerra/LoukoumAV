@@ -10,6 +10,7 @@
 #include "utils/hash.h"
 #include "utils/config.h"
 #include "detection/heuristic.h"
+#include "analysis/static/yara_engine.h"
 
 FileType DetectFileType(uint8_t *data, size_t size) {
 
@@ -69,6 +70,25 @@ int Scanner_ScanFile(const char* filePath, ScanResult *result) {
     }
 
     printf("SHA256 Hash en cours de traitement: %s\n file: %s \n", hashOutput, filePath);
+
+    /*              Scan Yara               */
+
+    int success = YARA_ScanBuffer(fileData, fileSize, RULEPATH, result);
+    if (success != 0){
+        fprintf(stderr,"Echec du scan yara");
+    }
+
+
+
+
+
+
+
+
+
+
+
+    /*              Comparaison signature   */
 
     SignatureEntry *signatures = NULL;
     int signatureCount = 0;

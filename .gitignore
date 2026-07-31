@@ -1,5 +1,11 @@
 *.
 *.obj
 *.pdb
-build/
 .vscode/
+*.exe
+build/
+*.lib
+*.def
+*.exp
+
+

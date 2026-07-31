@@ -4,7 +4,8 @@
 #include <stdio.h>
 #include <ctype.h>
 #include "utils/config.h"
-
+#include <stdlib.h>
+#include <string.h>
 
 /*
 typedef struct {
