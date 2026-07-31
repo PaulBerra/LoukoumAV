@@ -6,7 +6,7 @@
 #include <stdint.h>
 #include <time.h>
 
-#define QUARANTINE_MAGIC 0x4A4F484E504F524B
+#define QUARANTINE_MAGIC 0x504F524B
 
 typedef struct {
     uint32_t magic;
