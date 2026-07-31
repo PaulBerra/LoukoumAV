@@ -6,25 +6,25 @@
 #include <string.h>
 
 typedef struct {
-    /* 
-    
-    Structure pour stocker une signature 
-    Structure to store a signature 
-    
+    /*
+
+    Structure pour stocker une signature
+    Structure to store a signature
+
     hash: SHA256 hash of the malware file in hexadecimal format + null terminator
     malwareName: Name of the malware associated with the hash
 
     */
 
-    char hash[65];  
+    char hash[65];
     char malwareName[128];
 } SignatureEntry;
 
 int loadCSV(const char* filename, SignatureEntry** entries, int* entryCount) {
-    /* 
+    /*
 
     Charge les signatures à partir d'un fichier CSV
-    Load signatures from a CSV file 
+    Load signatures from a CSV file
 
     */
 
@@ -85,11 +85,11 @@ int loadCSV(const char* filename, SignatureEntry** entries, int* entryCount) {
 
 const SignatureEntry* lookupHash(const char* hash, const SignatureEntry* entries, int entryCount) {
 
-    /* 
+    /*
 
-    Compare la signature du fichier scanné a celles de la base de données 
-    Compare the hash of the scanned file with those in the database 
-    
+    Compare la signature du fichier scanné a celles de la base de données
+    Compare the hash of the scanned file with those in the database
+
     */
 
     for (int i = 0; i < entryCount; i++) {

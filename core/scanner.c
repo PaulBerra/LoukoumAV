@@ -12,7 +12,7 @@
 #include "detection/heuristic.h"
 
 FileType DetectFileType(uint8_t *data, size_t size) {
-    
+
     /*
     Identifies the type of a file by inspecting its magic bytes.
     Inputs  : data - pointer to the file buffer
@@ -33,7 +33,7 @@ FileType DetectFileType(uint8_t *data, size_t size) {
     if (data[0] == 0x37 && data[1] == 0x7A)                        return FILE_TYPE_7ZIP;
     if (data[0] == 0xFF && data[1] == 0xD8)                        return FILE_TYPE_JPEG;
     if (data[0] == 0x89 && data[1] == 'P' && data[2] == 'N')      return FILE_TYPE_PNG;
-            
+
     return FILE_TYPE_UKNW;
 
 }
@@ -61,7 +61,7 @@ int Scanner_ScanFile(const char* filePath, ScanResult *result) {
     }
 
     uint8_t hashOutput[65] = {0}; // 64 characters for SHA256 in hex + null terminator
-    
+
     if (ComputeHash(fileData, fileSize, "SHA256", hashOutput, sizeof(hashOutput)) != 0) {
         fprintf(stderr, "Failed to compute hash for file: %s\n", filePath);
         free(fileData);

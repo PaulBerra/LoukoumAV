@@ -8,9 +8,9 @@
 
 int ComputeHash(uint8_t *ptableau, size_t tableauSize, const char* hashType, uint8_t *outHashBuffer, size_t outHashSize) {
 
-    /* 
-    
-    Calcule le hash SHA256 d'un tableau de bytes 
+    /*
+
+    Calcule le hash SHA256 d'un tableau de bytes
     Computes the SHA256 hash of a byte array
 
     */
@@ -35,7 +35,7 @@ int ComputeHash(uint8_t *ptableau, size_t tableauSize, const char* hashType, uin
 int ReadFileBytes(const char* filename, uint8_t **buffer, size_t* bufferSize) {
 
     /*
-    
+
     Lit un fichier et stocke son contenu dans un tableau de bytes
     Reads a file and stores its content in a byte array
 
@@ -72,7 +72,7 @@ int ReadFileBytes(const char* filename, uint8_t **buffer, size_t* bufferSize) {
         *buffer = NULL;
         return -1;
     }
-    
+
     fclose(file);
     return 0;
 }
