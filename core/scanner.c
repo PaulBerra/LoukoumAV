@@ -130,7 +130,6 @@ int Scanner_ScanFile(const char* filePath, ScanResult *result) {
 
     int score = computeScore(result);
 
-
     free(fileData);
     free(signatures);
 
