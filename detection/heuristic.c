@@ -41,5 +41,9 @@ int computeScore(const ScanResult *result) {
         score = score + 100;
     }
 
+    if (result->yaraMatchCount > 0) {
+    score += 30 * result->yaraMatchCount;
+    }
+
     return score;
 }

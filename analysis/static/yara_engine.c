@@ -6,7 +6,9 @@
 #include "detection/heuristic.h"
 
 static int YaraCallback(YR_SCAN_CONTEXT *context, int message, void *message_data, void *user_data) {
+    //printf("DEBUG YARA callback: message=%d\n", message);
     if (message == CALLBACK_MSG_RULE_MATCHING) {
+        //printf("DEBUG YARA: MATCH!\n");
         ScanResult *result = (ScanResult*)user_data;
         YR_RULE *rule = (YR_RULE*)message_data;
 

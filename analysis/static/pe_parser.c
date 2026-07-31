@@ -102,7 +102,8 @@ int PE_ParseImports(uint8_t *data, size_t size, ScanResult *result) {
             stores matches in result->detectedImports and increments
             result->detectedImportCount
     */
-    printf("DEBUG: entering PE_ParseImports\n");
+   
+    //printf("DEBUG: entering PE_ParseImports\n");
     IMAGE_DOS_HEADER *dosHeader = (IMAGE_DOS_HEADER*)data;
     if (dosHeader->e_lfanew <= 0 || dosHeader->e_lfanew + sizeof(IMAGE_NT_HEADERS) > size) {
         return -1;
