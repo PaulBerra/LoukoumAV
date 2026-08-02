@@ -1,7 +1,6 @@
-# A small educativ project to understand how an AV work.
+# LoukoumAV
 
-compil (internal note) : cl.exe cli/main.c utils/hash.c analysis/static/signature.c analysis/static/pe_parser.c detection/heuristic.c core/scanner.c /I"." /I"C:\vcpkg\installed\x64-windows-static\include" /D_WIN64 /link C:\vcpkg\installed\x64-windows-static\lib\mbedcrypto.lib
-
+A small educativ project to understand how an AV work.
 
 ## Features
 
@@ -92,3 +91,10 @@ Start-Service LoukoumAV # démarre le monitoring
 - `rules/signatures/hashes.csv` — hashes malveillants connus
 - `rules/yara/rules.yar` — règles YARA
 - `rules/sysmon/rules.xml` — règles composites Sysmon
+
+
+run debug (not for you | DEV ) : 
+
+```
+cls; del service.log; cd build; cmake --build . --config Release; cd ..; C:\Antivirus_loukoum\build\Release\loukoumav.exe uninstall; sleep(5); C:\Antivirus_loukoum\build\Release\loukoumav.exe install; sleep(5); Start-Service LoukoumAV
+```
