@@ -1,6 +1,4 @@
-// Orchestrateur des analyses
-
-// core/engine.h
+// engine.h
 #ifndef ENGINE_H
 #define ENGINE_H
 
@@ -15,7 +13,6 @@ typedef enum {
     EVENT_FILE_WRITE,
     EVENT_MEMORY_RWX,
     EVENT_NETWORK_CONNECT,
-    // à étendre
 } EventType;
 
 typedef struct {
@@ -23,16 +20,8 @@ typedef struct {
     DWORD pid;
     DWORD parentPid;
     uint64_t timestamp;
-    char details[512];  // chemin fichier, IP, etc.
+    char details[512];
 } Event;
-
-typedef struct {
-    Event history[MAX_HISTORY];
-    int count;
-    CRITICAL_SECTION lock;  // thread-safety
-} EngineState;
-
-static EngineState g_state = {0};
 
 int Engine_ProcessEvent(const Event *event);
 

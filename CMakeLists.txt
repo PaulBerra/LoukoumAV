@@ -25,6 +25,7 @@ add_executable(loukoumav
     monitor/handlers/handler_kernel_process.c
     core/service.c
     core/engine.c
+    detection/rules_parser.cpp
 )
 
 target_link_libraries(loukoumav
@@ -32,11 +33,15 @@ target_link_libraries(loukoumav
     ${VCPKG_ROOT}/lib/libyara.lib
     ${VCPKG_ROOT}/lib/libcrypto.lib
     ${VCPKG_ROOT}/lib/libssl.lib
+    ${VCPKG_ROOT}/lib/tinyxml2.lib
+    #${VCPKG_ROOT}/lib/cjson.lib since we use sysmon rules, useless
     crypt32
     ws2_32
     advapi32
     user32
     amsi
 )
+
+set_source_files_properties(detection/rules_parser.cpp PROPERTIES LANGUAGE CXX)
 
 target_compile_definitions(loukoumav PRIVATE _WIN64)

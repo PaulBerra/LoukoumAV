@@ -1,0 +1,9 @@
+<Sysmon>
+  <EventFiltering>
+    <RuleGroup name="test_powershell" groupRelation="or">
+      <ProcessCreate onmatch="include">
+        <Image condition="end with">powershell.exe</Image>
+      </ProcessCreate>
+    </RuleGroup>
+  </EventFiltering>
+</Sysmon>

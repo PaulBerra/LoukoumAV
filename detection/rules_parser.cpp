@@ -1,0 +1,106 @@
+#include "rules_parser.h"
+#include <tinyxml2.h>
+#include <string.h>
+#include <stdio.h>
+
+using namespace tinyxml2;
+
+extern "C" int Rules_LoadFromFile(const char *path, SysmonRules *out) {
+    XMLDocument doc;
+    if (doc.LoadFile(path) != XML_SUCCESS) {
+        return -1;
+    }
+    
+    out->ruleCount = 0;
+    
+    XMLElement *sysmon = doc.FirstChildElement("Sysmon");
+    if (!sysmon) return -1;
+    
+    XMLElement *filtering = sysmon->FirstChildElement("EventFiltering");
+    if (!filtering) return -1;
+    
+    // Parcourir chaque RuleGroup
+    for (XMLElement *group = filtering->FirstChildElement("RuleGroup"); 
+         group != nullptr; 
+         group = group->NextSiblingElement("RuleGroup")) {
+        
+        const char *groupName = group->Attribute("name");
+        
+        // Parcourir chaque ProcessCreate dans le groupe
+        for (XMLElement *pc = group->FirstChildElement("ProcessCreate"); 
+             pc != nullptr; 
+             pc = pc->NextSiblingElement("ProcessCreate")) {
+            
+            if (out->ruleCount >= 256) return 0;
+            
+            SysmonRule *rule = &out->rules[out->ruleCount];
+            rule->type = RULE_PROCESS_CREATE;
+            strncpy(rule->groupName, groupName ? groupName : "", 127);
+            
+            const char *onMatch = pc->Attribute("onmatch");
+            rule->onMatch = (onMatch && strcmp(onMatch, "include") == 0) ? 1 : 0;
+            rule->conditionCount = 0;
+            
+            // Parcourir chaque enfant (ParentImage, Image, CommandLine, etc.)
+            for (XMLElement *cond = pc->FirstChildElement(); 
+                 cond != nullptr; 
+                 cond = cond->NextSiblingElement()) {
+                
+                if (rule->conditionCount >= 16) break;
+                
+                RuleCondition *rc = &rule->conditions[rule->conditionCount];
+                strncpy(rc->field, cond->Name(), 63);
+                
+                const char *conditionAttr = cond->Attribute("condition");
+                strncpy(rc->condition, conditionAttr ? conditionAttr : "is", 31);
+                
+                const char *value = cond->GetText();
+                strncpy(rc->value, value ? value : "", 511);
+                
+                rule->conditionCount++;
+            }
+            
+            out->ruleCount++;
+        }
+    }
+    
+    return 0;
+}
+
+extern "C" int Rules_MatchProcessCreate(const SysmonRules *rules, const char *parentImage, const char *image) {
+    for (int i = 0; i < rules->ruleCount; i++) {
+        const SysmonRule *rule = &rules->rules[i];
+        if (rule->type != RULE_PROCESS_CREATE) continue;
+        
+        int allConditionsMatch = 1;
+        
+        for (int j = 0; j < rule->conditionCount; j++) {
+            const RuleCondition *cond = &rule->conditions[j];
+            const char *target = NULL;
+            
+            if (strcmp(cond->field, "ParentImage") == 0) target = parentImage;
+            else if (strcmp(cond->field, "Image") == 0) target = image;
+            
+            if (!target) { allConditionsMatch = 0; break; }
+            
+            // Vérifier condition
+            int matches = 0;
+            if (strcmp(cond->condition, "is") == 0) {
+                matches = (strcmp(target, cond->value) == 0);
+            } else if (strcmp(cond->condition, "end with") == 0) {
+                size_t tlen = strlen(target);
+                size_t vlen = strlen(cond->value);
+                matches = (tlen >= vlen && strcmp(target + tlen - vlen, cond->value) == 0);
+            } else if (strcmp(cond->condition, "contains") == 0) {
+                matches = (strstr(target, cond->value) != NULL);
+            }
+            
+            if (!matches) { allConditionsMatch = 0; break; }
+        }
+        
+        if (allConditionsMatch) {
+            return i;  // retourne l'index de la règle qui a matché
+        }
+    }
+    return -1;  // pas de match
+}
