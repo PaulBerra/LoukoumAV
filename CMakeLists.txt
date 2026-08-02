@@ -21,6 +21,9 @@ add_executable(loukoumav
     core/report.c
     monitor/amsi.c
     monitor/amsi_client.c
+    monitor/etw.c
+    monitor/handlers/handler_kernel_process.c
+    core/service.c
 )
 
 target_link_libraries(loukoumav

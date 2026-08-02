@@ -3,12 +3,19 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#include <stddef.h>
+
 #define ALERT_THRESHOLD 60
 #define ENTROPY_THRESHOLD 7.1
-#define CSV_PATH "rules\\signatures\\hashes.csv"
+#define CSV_PATH "C:\\Antivirus_loukoum\\rules\\signatures\\hashes.csv"
 #define RULEPATH "C:\\Antivirus_loukoum\\rules\\yara\\rules.yar"
 #define MAX_SCORE 70
-#endif
+#define SERVICE_PATH L"\"C:\\Antivirus_loukoum\\build\\Release\\loukoumav.exe\" run"
+#define SERVICE_NAME L"LoukoumAV"
+#define SERVICE_DISPLAY_NAME L"Loukoum AntiVirus"
+#define SERVICE_LOGFILE "C:\\Antivirus_loukoum\\service.log"
+
+
 
 static const char *SUSPICIOUS_IMPORTS[] = {
     "VirtualAlloc", "VirtualProtect",
@@ -24,3 +31,4 @@ static const char *PATTERNS[] = {
     NULL
 };
 
+#endif

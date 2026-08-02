@@ -84,8 +84,6 @@ int Scanner_ScanFile(const char* filePath, ScanResult *result) {
         }
     }
 
-
-
     /*          Soumission a AMSI pour second avis si dispo         */
 
     // ici verifier si autre provider dispo
@@ -95,10 +93,6 @@ int Scanner_ScanFile(const char* filePath, ScanResult *result) {
     }
     if (result->amsiDetected != 0) printf("AMSI detection : %d", result->amsiDetected);
     else printf("AMSI verdict clean\n");
-
-
-
-
 
     /*              Comparaison signature   */
 
