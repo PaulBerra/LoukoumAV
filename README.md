@@ -123,7 +123,6 @@ Start-Service LoukoumAV # démarre le monitoring
 - [ ] Groupement OR/AND
 
 ## Provider AMSI
-- [ ] Signature Authenticode (nécessaire pour que Windows charge le provider)
 - [ ] Implémenter la logique Scan complète (brancher Scanner_ScanFile)
 
 ## Divers
