@@ -71,10 +71,10 @@ extern "C" int Rules_LoadFromFile(const char *path, SysmonRules *out) {
     return 0;
 }
 
-extern "C" int Rules_MatchProcessCreate(const SysmonRules *rules, const char *parentImage, const char *image) {
+extern "C" int Rules_MatchEvent(const SysmonRules *rules, RuleType type, const EventField *fields, int fieldCount) {
     for (int i = 0; i < rules->ruleCount; i++) {
         const SysmonRule *rule = &rules->rules[i];
-        if (rule->type != RULE_PROCESS_CREATE) continue;
+        if (rule->type != type) continue;
         
         int allConditionsMatch = 1;
         
@@ -82,15 +82,19 @@ extern "C" int Rules_MatchProcessCreate(const SysmonRules *rules, const char *pa
             const RuleCondition *cond = &rule->conditions[j];
             const char *target = NULL;
             
-            if (strcmp(cond->field, "ParentImage") == 0) target = parentImage;
-            else if (strcmp(cond->field, "Image") == 0) target = image;
+            // Chercher le champ dans le tableau
+            for (int k = 0; k < fieldCount; k++) {
+                if (strcmp(cond->field, fields[k].name) == 0) {
+                    target = fields[k].value;
+                    break;
+                }
+            }
             
             if (!target) { allConditionsMatch = 0; break; }
             
-            // Vérifier condition
             int matches = 0;
             if (strcmp(cond->condition, "is") == 0) {
-                matches = (strcmp(target, cond->value) == 0);
+                matches = (_stricmp(target, cond->value) == 0);
             } else if (strcmp(cond->condition, "end with") == 0) {
                 size_t tlen = strlen(target);
                 size_t vlen = strlen(cond->value);
@@ -98,12 +102,11 @@ extern "C" int Rules_MatchProcessCreate(const SysmonRules *rules, const char *pa
             } else if (strcmp(cond->condition, "contains") == 0) {
                 matches = (strstr(target, cond->value) != NULL);
             }
+            
             if (!matches) { allConditionsMatch = 0; break; }
         }
         
-        if (allConditionsMatch) {
-            return i;  // retourne l'index de la règle qui a matché
-        }
+        if (allConditionsMatch) return i;
     }
-    return -1;  // pas de match
+    return -1;
 }

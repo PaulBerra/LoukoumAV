@@ -26,13 +26,20 @@ typedef struct {
     int ruleCount;
 } SysmonRules;
 
+typedef struct {
+    const char *name;
+    const char *value;
+} EventField;
+
+
+
 // API C
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 int Rules_LoadFromFile(const char *path, SysmonRules *out);
-int Rules_MatchProcessCreate(const SysmonRules *rules, const char *parentImage, const char *image);
+int Rules_MatchEvent(const SysmonRules *rules, RuleType type,const EventField *fields, int fieldCount);
 
 #ifdef __cplusplus
 }
