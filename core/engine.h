@@ -13,6 +13,8 @@ typedef enum {
     EVENT_FILE_WRITE,
     EVENT_MEMORY_RWX,
     EVENT_NETWORK_CONNECT,
+    EVENT_REMOTE_THREAD,
+    EVENT_PROCESS_INJECT,
 } EventType;
 
 typedef struct {

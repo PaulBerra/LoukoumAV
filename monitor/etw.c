@@ -6,7 +6,9 @@
 
 static const GUID ProviderKernelProcess = 
     { 0x22FB2CD6, 0x0E7B, 0x422B, {0xA0, 0xC7, 0x2F, 0xAD, 0x1F, 0xD0, 0xE7, 0x16} };
-    
+
+static const GUID ProviderThreatIntelligence = 
+    { 0xF4E1897C, 0xBB5D, 0x5668, {0xF1, 0xD8, 0x04, 0x0F, 0x4D, 0x8D, 0xD3, 0x44} };
 
 static TRACEHANDLE g_sessionHandle = 0;
 static EVENT_TRACE_PROPERTIES *g_pSessionProperties = NULL;
@@ -80,8 +82,29 @@ int ETW_Start(void){
     f = fopen(SERVICE_LOGFILE, "a"); if (f) { fprintf(f, "ETW_Start: EnableTraceEx2 status=%lu\n", status); fclose(f); }
 
     if (status != ERROR_SUCCESS) {
+        fprintf(f, "EnableTraceEx2 for ETW failed with error: %lu\n", status);
         return 1;
     }
+
+
+    status = EnableTraceEx2(g_sessionHandle,
+        &ProviderThreatIntelligence,
+        EVENT_CONTROL_CODE_ENABLE_PROVIDER,
+        TRACE_LEVEL_VERBOSE,
+        0xFFFFFFFFFFFFFFFF,
+        0, 0, NULL);
+    f = fopen(SERVICE_LOGFILE, "a"); if (f) { fprintf(f, "ETW_TI_Start: EnableTraceEx2 status=%lu\n", status); fclose(f); }
+
+    if (status != ERROR_SUCCESS) {
+        fprintf(f, "EnableTraceEx2 for Threat Intelligence ETW failed with error: %lu\n", status);
+    }
+
+
+
+
+
+
+
 
     EVENT_TRACE_LOGFILEW logFile = {0};
     logFile.LoggerName = g_sessionName;
