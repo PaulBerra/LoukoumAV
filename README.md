@@ -92,6 +92,47 @@ Start-Service LoukoumAV # démarre le monitoring
 - `rules/yara/rules.yar` — règles YARA
 - `rules/sysmon/rules.xml` — règles composites Sysmon
 
+## TODO
+
+```
+# TODO
+
+## Améliorations moteur ETW
+- [ ] Récupérer le ParentProcess pour matcher les règles Sysmon "winword.exe → powershell.exe"
+- [ ] Ignorer les processus système signés Microsoft pour réduire le bruit
+- [ ] Gérer les OpenProcess qui échouent (retry, fallback PROCESS_QUERY_INFORMATION)
+
+## Handlers ETW supplémentaires
+- [ ] handler_file.c (créations/modifications de fichiers)
+- [ ] handler_network.c (connexions sortantes)
+- [ ] handler_registry.c (modifications registre)
+
+## Corrélation temporelle
+- [ ] Utiliser g_state.history pour les règles séquentielles
+- [ ] Règles composites type "PROCESS_START + MEMORY_RWX + CREATE_REMOTE_THREAD en 5s"
+- [ ] Fenêtre temporelle configurable par règle
+
+## Actions sur alerte
+- [ ] Kill du processus au-dessus d'un seuil
+- [ ] Quarantaine du binaire
+- [ ] Notification (event log Windows, webhook)
+
+## Règles
+- [ ] Charger de vraies règles publiques (SwiftOnSecurity, Olaf Hartong)
+- [ ] Support des conditions Sysmon manquantes (regex, wildcards, image path)
+- [ ] Groupement OR/AND
+
+## Provider AMSI
+- [ ] Signature Authenticode (nécessaire pour que Windows charge le provider)
+- [ ] Implémenter la logique Scan complète (brancher Scanner_ScanFile)
+
+## Divers
+- [ ] Retirer les logs debug de production
+- [ ] Chemin d'installation propre (Program Files, pas C:\Antivirus_loukoum)
+- [ ] Script d'installation MSI
+- [ ] Tests unitaires
+- [ ] Mode verbose CLI
+```
 
 run debug (not for you | DEV ) : 
 
