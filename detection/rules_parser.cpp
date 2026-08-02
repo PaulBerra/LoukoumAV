@@ -1,33 +1,34 @@
-#include "rules_parser.h"
 #include <tinyxml2.h>
 #include <string.h>
 #include <stdio.h>
 
-using namespace tinyxml2;
+#include "rules_parser.h"
+#include "utils/etw_helper.h"
+
 
 extern "C" int Rules_LoadFromFile(const char *path, SysmonRules *out) {
-    XMLDocument doc;
-    if (doc.LoadFile(path) != XML_SUCCESS) {
+    tinyxml2::XMLDocument doc; // conflict with msxml.h for windows.h
+    if (doc.LoadFile(path) != tinyxml2::XML_SUCCESS) {
         return -1;
     }
     
     out->ruleCount = 0;
     
-    XMLElement *sysmon = doc.FirstChildElement("Sysmon");
+    tinyxml2::XMLElement *sysmon = doc.FirstChildElement("Sysmon");
     if (!sysmon) return -1;
     
-    XMLElement *filtering = sysmon->FirstChildElement("EventFiltering");
+    tinyxml2::XMLElement *filtering = sysmon->FirstChildElement("EventFiltering");
     if (!filtering) return -1;
     
     // Parcourir chaque RuleGroup
-    for (XMLElement *group = filtering->FirstChildElement("RuleGroup"); 
+    for (tinyxml2::XMLElement *group = filtering->FirstChildElement("RuleGroup"); 
          group != nullptr; 
          group = group->NextSiblingElement("RuleGroup")) {
         
         const char *groupName = group->Attribute("name");
         
         // Parcourir chaque ProcessCreate dans le groupe
-        for (XMLElement *pc = group->FirstChildElement("ProcessCreate"); 
+        for (tinyxml2::XMLElement *pc = group->FirstChildElement("ProcessCreate"); 
              pc != nullptr; 
              pc = pc->NextSiblingElement("ProcessCreate")) {
             
@@ -42,7 +43,7 @@ extern "C" int Rules_LoadFromFile(const char *path, SysmonRules *out) {
             rule->conditionCount = 0;
             
             // Parcourir chaque enfant (ParentImage, Image, CommandLine, etc.)
-            for (XMLElement *cond = pc->FirstChildElement(); 
+            for (tinyxml2::XMLElement *cond = pc->FirstChildElement(); 
                  cond != nullptr; 
                  cond = cond->NextSiblingElement()) {
                 
@@ -71,11 +72,6 @@ extern "C" int Rules_LoadFromFile(const char *path, SysmonRules *out) {
 }
 
 extern "C" int Rules_MatchProcessCreate(const SysmonRules *rules, const char *parentImage, const char *image) {
-    FILE *f = fopen("C:\\Antivirus_loukoum\\service.log", "a");
-    if (f) { 
-        fprintf(f, "MATCH TRY: parent='%s' image='%s'\n", parentImage, image); 
-        fclose(f); 
-    }
     for (int i = 0; i < rules->ruleCount; i++) {
         const SysmonRule *rule = &rules->rules[i];
         if (rule->type != RULE_PROCESS_CREATE) continue;

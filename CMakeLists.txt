@@ -27,6 +27,7 @@ add_executable(loukoumav
     core/engine.c
     detection/rules_parser.cpp
     monitor/dynamic_scoring.c
+    utils/etw_helper.c
 )
 
 target_link_libraries(loukoumav
@@ -41,6 +42,7 @@ target_link_libraries(loukoumav
     advapi32
     user32
     amsi
+    tdh
 )
 
 set_source_files_properties(detection/rules_parser.cpp PROPERTIES LANGUAGE CXX)

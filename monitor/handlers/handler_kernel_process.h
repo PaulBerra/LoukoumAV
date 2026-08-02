@@ -8,6 +8,9 @@
 
 #include "utils/config.h"
 #include "core/scanner.h"
+#include "utils/etw_helper.h"
+#include "core/engine.h"
+
 void Handler_KernelProcess(PEVENT_RECORD event);
 
 #endif
