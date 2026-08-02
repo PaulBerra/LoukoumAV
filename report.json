@@ -1,8 +1,0 @@
-{
-  "file": "main.exe",
-  "score": 45,
-  "entropy_max": 6.7455,
-  "signature_match": false,
-  "yara_matches": ["TestRule"],
-  "suspicious_imports": ["GetProcAddress", "VirtualProtect"]
-}
