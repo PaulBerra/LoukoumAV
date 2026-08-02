@@ -114,7 +114,7 @@ int Service_Uninstall(void) {
 /*             Gestion du RUN du service            */
 static SERVICE_STATUS g_serviceStatus;
 static SERVICE_STATUS_HANDLE g_serviceStatusHandle;
-static HANDLE g_stopEvent = NULL;
+static HANDLE g_serviceStopEvent = NULL;
 
 void WINAPI ServiceCtrlHandler(DWORD ctrlCode) {
     switch (ctrlCode) {

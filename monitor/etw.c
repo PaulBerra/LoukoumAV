@@ -2,7 +2,7 @@
 #include "etw.h"
 #include "handlers/handler_kernel_process.h"
 #include <stdio.h>
-
+#include "core/service.h"
 
 static const GUID ProviderKernelProcess = 
     { 0x22FB2CD6, 0x0E7B, 0x422B, {0xA0, 0xC7, 0x2F, 0xAD, 0x1F, 0xD0, 0xE7, 0x16} };
@@ -15,6 +15,13 @@ static EVENT_TRACE_PROPERTIES *g_pSessionProperties = NULL;
 static WCHAR g_sessionName[] = L"LoukoumETWsession";
 static ENABLE_TRACE_PARAMETERS g_enableParameters;
 
+// gestion des retries pour le provider ThreatIntel
+static HANDLE g_tiRetryThread = NULL;
+static volatile int g_tiEnabled = 0;
+
+static HANDLE g_etwRetryThread = NULL;
+static volatile int g_etwEnabled = 0;
+
 static void WINAPI EtwEventCallback(PEVENT_RECORD event) {
 
     // Dispatch selon le provider GUID
@@ -23,6 +30,54 @@ static void WINAPI EtwEventCallback(PEVENT_RECORD event) {
     }
     // else if pour les autres handlers plus tard
 }
+
+
+static DWORD WINAPI EtwTiRetryThread(LPVOID param) {
+    while (!g_tiEnabled) {
+        DWORD wait = WaitForSingleObject(g_serviceStopEvent, 5 * 60 * 1000);
+        if (wait == WAIT_OBJECT_0) return 0;  // service stopped
+        
+        ULONG status = EnableTraceEx2(g_sessionHandle,
+            &ProviderThreatIntelligence,
+            EVENT_CONTROL_CODE_ENABLE_PROVIDER,
+            TRACE_LEVEL_VERBOSE,
+            0xFFFFFFFFFFFFFFFF,
+            0, 0, NULL);
+        
+        if (status == ERROR_SUCCESS) {
+            g_tiEnabled = 1;
+            FILE *f = fopen(SERVICE_LOGFILE, "a");
+            if (f) { fprintf(f, "ETW_TI: enabled after retry\n"); fclose(f); }
+        }
+    }
+    return 0;
+}
+
+static DWORD WINAPI EtwRetryThread(LPVOID param) {
+    while (!g_etwEnabled) {
+        
+        DWORD wait = WaitForSingleObject(g_serviceStopEvent, 5 * 60 * 1000);
+        if (wait == WAIT_OBJECT_0) return 0;  // service stopped
+
+        ULONG status = EnableTraceEx2(g_sessionHandle, 
+            &ProviderKernelProcess, 
+            EVENT_CONTROL_CODE_ENABLE_PROVIDER, 
+            TRACE_LEVEL_VERBOSE,
+            0xFFFFFFFFFFFFFFFF,
+            0,
+            0,
+            NULL
+        );
+
+        if (status == ERROR_SUCCESS) {
+            g_etwEnabled = 1;
+            FILE *f = fopen(SERVICE_LOGFILE, "a");
+            if (f) { fprintf(f, "ETW: enabled after retry\n"); fclose(f); }
+        }
+    }
+    return 0;
+}
+
 
 int ETW_Start(void){
     FILE *f;
@@ -81,11 +136,16 @@ int ETW_Start(void){
     );
     f = fopen(SERVICE_LOGFILE, "a"); if (f) { fprintf(f, "ETW_Start: EnableTraceEx2 status=%lu\n", status); fclose(f); }
 
-    if (status != ERROR_SUCCESS) {
+    if (status == ERROR_SUCCESS) {
+        g_etwEnabled = 1;
+    } else {
         fprintf(f, "EnableTraceEx2 for ETW failed with error: %lu\n", status);
-        return 1;
+        // Start a retry thread for ETW provider
+        g_etwRetryThread = CreateThread(NULL, 0, EtwRetryThread, NULL, 0, NULL);
+        if (!g_etwRetryThread) {
+            fprintf(f, "Failed to create retry thread for ETW provider.\n");
+        }
     }
-
 
     status = EnableTraceEx2(g_sessionHandle,
         &ProviderThreatIntelligence,
@@ -95,8 +155,15 @@ int ETW_Start(void){
         0, 0, NULL);
     f = fopen(SERVICE_LOGFILE, "a"); if (f) { fprintf(f, "ETW_TI_Start: EnableTraceEx2 status=%lu\n", status); fclose(f); }
 
-    if (status != ERROR_SUCCESS) {
+    if (status == ERROR_SUCCESS) {
+        g_tiEnabled = 1;
         fprintf(f, "EnableTraceEx2 for Threat Intelligence ETW failed with error: %lu\n", status);
+    } else {
+        // Start a retry thread for ThreatIntel provider
+        g_tiRetryThread = CreateThread(NULL, 0, EtwTiRetryThread, NULL, 0, NULL);
+        if (!g_tiRetryThread) {
+            fprintf(f, "Failed to create retry thread for ThreatIntel provider.\n");
+        }
     }
 
 
