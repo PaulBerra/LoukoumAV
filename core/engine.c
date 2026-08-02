@@ -4,6 +4,7 @@
 #include "detection/rules_parser.h"
 #include "monitor/dynamic_scoring.h"
 #include "utils/config.h"
+#include "core/scanner.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -31,6 +32,28 @@ int Engine_ProcessEvent(const Event *event) {
     
     // Traiter les process starts
     if (event->type == EVENT_PROCESS_START) {
+
+        // Scan statique du binaire
+        ScanResult sr = {0};
+        int staticScore = Scanner_ScanFile(event->details, &sr);
+        if (staticScore > 0) {
+            Scoring_AddPoints(event->pid, staticScore, -1);
+        }
+
+        int totalScore = Scoring_GetScore(event->pid);
+        if (totalScore > ALERT_THRESHOLD) {
+            FILE *f = fopen(SERVICE_LOGFILE, "a");
+            if (f) { 
+                // pour l'instant on log ici
+                fprintf(f, "!!! HIGH THREAT: pid=%lu score=%d image=%s\n", 
+                        event->pid, totalScore, event->details); 
+                fclose(f); 
+            }
+        }
+
+
+        // Match des règles Sysmon sur les métadonnées de création du processus
+        // Chaque règle qui matche ajoute sa severity au score cumulé du PID
         EventField fields[] = {
             {"ParentImage", event->parentImage},
             {"Image", event->details}

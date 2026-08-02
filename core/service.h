@@ -3,6 +3,7 @@
 #define SERVICE_H
 
 #include "utils/config.h"
+#include <windows.h>
 
 extern HANDLE g_serviceStopEvent;
 

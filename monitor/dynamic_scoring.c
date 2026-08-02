@@ -27,6 +27,8 @@ ProcessScore* Scoring_GetOrCreate(DWORD pid) {
     return NULL;
 }
 
+
+
 void Scoring_AddPoints(DWORD pid, int severity, int ruleIdx) {
     ProcessScore *ps = Scoring_GetOrCreate(pid);
     if (!ps) return;

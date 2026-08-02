@@ -121,7 +121,7 @@ void WINAPI ServiceCtrlHandler(DWORD ctrlCode) {
         case SERVICE_CONTROL_STOP:
             g_serviceStatus.dwCurrentState = SERVICE_STOP_PENDING;
             SetServiceStatus(g_serviceStatusHandle, &g_serviceStatus);
-            SetEvent(g_stopEvent);  // débloque ServiceMain
+            SetEvent(g_serviceStopEvent);  // débloque ServiceMain
             break;
     }
 }
@@ -144,7 +144,7 @@ void WINAPI ServiceMain(DWORD argc, LPWSTR *argv) {
     SetServiceStatus(g_serviceStatusHandle, &g_serviceStatus);
     
     // Créer l'event de stop
-    g_stopEvent = CreateEventW(NULL, TRUE, FALSE, NULL);
+    g_serviceStopEvent = CreateEventW(NULL, TRUE, FALSE, NULL);
     
     // Signaler qu'on tourne
     g_serviceStatus.dwCurrentState = SERVICE_RUNNING;
@@ -154,7 +154,7 @@ void WINAPI ServiceMain(DWORD argc, LPWSTR *argv) {
     HANDLE hEtwThread = CreateThread(NULL, 0, EtwThread, NULL, 0, NULL);
     
     // Attendre le signal de stop
-    WaitForSingleObject(g_stopEvent, INFINITE);
+    WaitForSingleObject(g_serviceStopEvent, INFINITE);
     
     ETW_Stop();
     WaitForSingleObject(hEtwThread, 5000);  // attend max 5s la fin du thread

@@ -28,6 +28,9 @@ static void WINAPI EtwEventCallback(PEVENT_RECORD event) {
     if (IsEqualGUID(&event->EventHeader.ProviderId, &ProviderKernelProcess)) {
         Handler_KernelProcess(event);
     }
+    else if (IsEqualGUID(&event->EventHeader.ProviderId, &ProviderThreatIntelligence)) {
+        Handler_ThreatIntel(event);
+    }
     // else if pour les autres handlers plus tard
 }
 
@@ -55,7 +58,7 @@ static DWORD WINAPI EtwTiRetryThread(LPVOID param) {
 
 static DWORD WINAPI EtwRetryThread(LPVOID param) {
     while (!g_etwEnabled) {
-        
+
         DWORD wait = WaitForSingleObject(g_serviceStopEvent, 5 * 60 * 1000);
         if (wait == WAIT_OBJECT_0) return 0;  // service stopped
 
