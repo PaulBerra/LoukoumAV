@@ -24,6 +24,7 @@ add_executable(loukoumav
     monitor/etw.c
     monitor/handlers/handler_kernel_process.c
     core/service.c
+    core/engine.c
 )
 
 target_link_libraries(loukoumav

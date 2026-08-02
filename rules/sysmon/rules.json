@@ -1,0 +1,21 @@
+{
+    "rules": [
+        {
+            "name": "code_injection",
+            "severity": 90,
+            "sequence": [
+                { "type": "PROCESS_START" },
+                { "type": "MEMORY_RWX", "within_ms": 5000 },
+                { "type": "CREATE_REMOTE_THREAD", "within_ms": 5000 }
+            ]
+        },
+        {
+            "name": "suspicious_child",
+            "severity": 60,
+            "conditions": {
+                "parent_process": "winword.exe",
+                "child_process": "powershell.exe"
+            }
+        }
+    ]
+}
