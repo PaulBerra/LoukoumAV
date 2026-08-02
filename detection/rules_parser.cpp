@@ -57,6 +57,9 @@ extern "C" int Rules_LoadFromFile(const char *path, SysmonRules *out) {
                 const char *value = cond->GetText();
                 strncpy(rc->value, value ? value : "", 511);
                 
+                const char *sevAttr = group->Attribute("severity");
+                rule->severity = sevAttr ? atoi(sevAttr) : 50;
+                
                 rule->conditionCount++;
             }
             
@@ -94,7 +97,6 @@ extern "C" int Rules_MatchProcessCreate(const SysmonRules *rules, const char *pa
             } else if (strcmp(cond->condition, "contains") == 0) {
                 matches = (strstr(target, cond->value) != NULL);
             }
-            
             if (!matches) { allConditionsMatch = 0; break; }
         }
         

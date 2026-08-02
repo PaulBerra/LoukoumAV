@@ -26,6 +26,7 @@ add_executable(loukoumav
     core/service.c
     core/engine.c
     detection/rules_parser.cpp
+    monitor/dynamic_scoring.c
 )
 
 target_link_libraries(loukoumav

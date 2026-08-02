@@ -2,7 +2,9 @@
 
 #include "engine.h"
 #include "detection/rules_parser.h"
+#include "monitor/dynamic_scoring.h"
 #include "utils/config.h"
+
 #include <stdio.h>
 #include <string.h>
 
@@ -34,14 +36,24 @@ int Engine_ProcessEvent(const Event *event) {
         int ruleIdx = Rules_MatchProcessCreate(&g_rules, "", event->details);
         
         if (ruleIdx >= 0) {
+            int severity = g_rules.rules[ruleIdx].severity;
+
+            Scoring_AddPoints(event->pid, severity, ruleIdx);
+            int currentScore = Scoring_GetScore(event->pid);
+
             FILE *f = fopen(SERVICE_LOGFILE, "a");
             if (f) { 
-                fprintf(f, "ALERT: rule matched '%s' pid=%lu\n",
-                        g_rules.rules[ruleIdx].groupName, event->pid);
+                fprintf(f, "ALERT: rule matched '%s' pid=%lu score=%d\n",
+                        g_rules.rules[ruleIdx].groupName, event->pid, currentScore);
                 fclose(f); 
             }
         }
     }
     
+    if (event->type == EVENT_PROCESS_STOP) {
+        Scoring_Remove(event->pid);
+    }
+
+
     return 0;
 }

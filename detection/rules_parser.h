@@ -18,6 +18,7 @@ typedef struct {
     RuleCondition conditions[16];
     int conditionCount;
     int onMatch;  // 1 = include, 0 = exclude
+    int severity; // 
 } SysmonRule;
 
 typedef struct {
