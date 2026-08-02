@@ -2,6 +2,8 @@
 
 A small educativ project to understand how an AV work.
 
+<img width="2816" height="1536" alt="logo" src="https://github.com/user-attachments/assets/994f77d8-c577-4f31-bd69-b24847a5fc98" />
+
 ## Features
 
 **Scan statique (CLI)**
