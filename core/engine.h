@@ -26,6 +26,15 @@ typedef struct {
     char parentImage[MAX_PATH];
 } Event;
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int Engine_ProcessEvent(const Event *event);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -19,11 +19,17 @@ static EngineState g_state = {0};
 static SysmonRules g_rules = {0};
 static int g_rulesLoaded = 0;
 
+static MitreMap g_mitre = {0};
+static int g_mitreLoaded = 0;
 
 int Engine_ProcessEvent(const Event *event) {
     // Charger les règles au premier appel
     if (!g_rulesLoaded) {
-        if (Rules_LoadFromFile(SYSMON_RULES_PATH, &g_rules) == 0) {
+        if (!g_mitreLoaded) {
+            Mitre_LoadFromCSV(MITRE_CSV_PATH, &g_mitre);
+            g_mitreLoaded = 1;
+        }
+        if (Rules_LoadFromDirectory(RULES_DIR, &g_rules, &g_mitre) == 0) {
             g_rulesLoaded = 1;
             FILE *f = fopen(SERVICE_LOGFILE, "a");
             if (f) { fprintf(f, "ENGINE: loaded %d rules\n", g_rules.ruleCount); fclose(f); }

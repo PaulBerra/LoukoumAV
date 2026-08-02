@@ -14,9 +14,8 @@
 #define SERVICE_NAME L"LoukoumAV"
 #define SERVICE_DISPLAY_NAME L"Loukoum AntiVirus"
 #define SERVICE_LOGFILE "C:\\Antivirus_loukoum\\service.log"
-
-#define SYSMON_RULES_PATH "C:\\Antivirus_loukoum\\rules\\sysmon\\rules.xml"
-
+#define RULES_DIR "C:\\Antivirus_loukoum\\rules\\sysmon\\"
+#define MITRE_CSV_PATH "C:\\Antivirus_loukoum\\rules\\sysmon\\mitre_severity.csv"
 
 
 static const char *SUSPICIOUS_IMPORTS[] = {

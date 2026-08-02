@@ -5,6 +5,7 @@
 #include "utils/config.h"
 
 
+
 int Service_Install(void){
     SC_HANDLE hSCManager = OpenSCManagerW(
         NULL,   //local
@@ -114,7 +115,7 @@ int Service_Uninstall(void) {
 /*             Gestion du RUN du service            */
 static SERVICE_STATUS g_serviceStatus;
 static SERVICE_STATUS_HANDLE g_serviceStatusHandle;
-static HANDLE g_serviceStopEvent = NULL;
+HANDLE g_serviceStopEvent = NULL;
 
 void WINAPI ServiceCtrlHandler(DWORD ctrlCode) {
     switch (ctrlCode) {

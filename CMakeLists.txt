@@ -23,11 +23,13 @@ add_executable(loukoumav
     monitor/amsi_client.c
     monitor/etw.c
     monitor/handlers/handler_kernel_process.c
+    monitor/handlers/handler_threat_intel.c
     core/service.c
     core/engine.c
     detection/rules_parser.cpp
     monitor/dynamic_scoring.c
     utils/etw_helper.c
+    detection/mitre.c
 )
 
 # creation de la DLL pour amsi
