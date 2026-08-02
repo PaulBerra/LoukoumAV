@@ -30,13 +30,25 @@ add_executable(loukoumav
     utils/etw_helper.c
 )
 
+# creation de la DLL pour amsi
+add_library(LoukoumAMSI SHARED
+    monitor/amsi.c
+)
+target_link_libraries(LoukoumAMSI
+    advapi32
+)
+set_target_properties(LoukoumAMSI PROPERTIES
+    LINK_FLAGS "/DEF:${CMAKE_SOURCE_DIR}/monitor/amsi.def"
+)
+
+# ajout des bibliothèques nécessaires
 target_link_libraries(loukoumav
     ${VCPKG_ROOT}/lib/mbedcrypto.lib
     ${VCPKG_ROOT}/lib/libyara.lib
     ${VCPKG_ROOT}/lib/libcrypto.lib
     ${VCPKG_ROOT}/lib/libssl.lib
     ${VCPKG_ROOT}/lib/tinyxml2.lib
-    #${VCPKG_ROOT}/lib/cjson.lib since we use sysmon rules, useless
+    #${VCPKG_ROOT}/lib/cjson.lib            # since we use sysmon rules, useless
     crypt32
     ws2_32
     advapi32
@@ -45,6 +57,11 @@ target_link_libraries(loukoumav
     tdh
 )
 
+# preciser que c'est du C++
 set_source_files_properties(detection/rules_parser.cpp PROPERTIES LANGUAGE CXX)
+
+
+
+
 
 target_compile_definitions(loukoumav PRIVATE _WIN64)
