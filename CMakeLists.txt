@@ -19,6 +19,8 @@ add_executable(loukoumav
     detection/heuristic.c
     core/scanner.c
     core/report.c
+    monitor/amsi.c
+    monitor/amsi_client.c
 )
 
 target_link_libraries(loukoumav
@@ -30,6 +32,7 @@ target_link_libraries(loukoumav
     ws2_32
     advapi32
     user32
+    amsi
 )
 
 target_compile_definitions(loukoumav PRIVATE _WIN64)

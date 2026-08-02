@@ -12,7 +12,7 @@ static int YaraCallback(YR_SCAN_CONTEXT *context, int message, void *message_dat
         ScanResult *result = (ScanResult*)user_data;
         YR_RULE *rule = (YR_RULE*)message_data;
 
-        if (result->yaraMatchCount < 16) {
+        if (result->yaraMatchCount < 15) {
             strncpy(result->yaraMatches[result->yaraMatchCount], rule->identifier, 127);
             result->yaraMatchCount++;
         }

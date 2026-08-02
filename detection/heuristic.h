@@ -22,6 +22,7 @@ typedef struct ScanResult {
     int detectedImportCount;
     char yaraMatches[16][128];
     int yaraMatchCount;
+    int amsiDetected;
 } ScanResult;
 
 int computeScore(const ScanResult *result);

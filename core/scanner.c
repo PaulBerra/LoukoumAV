@@ -77,12 +77,24 @@ int Scanner_ScanFile(const char* filePath, ScanResult *result) {
     if (success != 0){
         fprintf(stderr,"Echec du scan yara");
     }
+    if (result->yaraMatchCount) {
+        printf("Yara match found (count: %d)\n", result->yaraMatchCount);
+        for (int ord = 0; ord < result->yaraMatchCount; ord++) {
+            printf("Yara matched rules : %s\n", result->yaraMatches[ord]);
+        }
+    }
 
 
 
+    /*          Soumission a AMSI pour second avis si dispo         */
 
-
-
+    // ici verifier si autre provider dispo
+    success = AMSIClient_Scan(fileData, fileSize, filePath, result);
+    if (success != 0){
+        fprintf(stderr,"Echec de soumission a AMSI");
+    }
+    if (result->amsiDetected != 0) printf("AMSI detection : %d", result->amsiDetected);
+    else printf("AMSI verdict clean\n");
 
 
 

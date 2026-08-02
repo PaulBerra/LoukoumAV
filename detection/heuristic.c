@@ -45,5 +45,9 @@ int computeScore(const ScanResult *result) {
     score += 30 * result->yaraMatchCount;
     }
 
+    if (result->amsiDetected >= 32768) score += 100;  // detected
+    else if (result->amsiDetected >= 16384) score += 40;  // blocked by admin
+
+
     return score;
 }
