@@ -9,5 +9,5 @@ build/
 *.exp
 *.dll
 *.log
-*.json
-main.exe
+report.json
+.git\
