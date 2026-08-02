@@ -21,6 +21,7 @@ typedef struct {
     DWORD parentPid;
     uint64_t timestamp;
     char details[512];
+    char parentImage[MAX_PATH];
 } Event;
 
 int Engine_ProcessEvent(const Event *event);

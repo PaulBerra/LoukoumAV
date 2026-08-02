@@ -33,7 +33,7 @@ int Engine_ProcessEvent(const Event *event) {
     if (event->type == EVENT_PROCESS_START) {
         // Pour l'instant on n'a que le chemin dans details, pas le parent
         // On passera "" pour parent
-        int ruleIdx = Rules_MatchProcessCreate(&g_rules, "", event->details);
+        int ruleIdx = Rules_MatchProcessCreate(&g_rules, event->parentImage, event->details);
         
         if (ruleIdx >= 0) {
             int severity = g_rules.rules[ruleIdx].severity;

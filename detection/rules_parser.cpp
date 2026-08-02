@@ -59,7 +59,7 @@ extern "C" int Rules_LoadFromFile(const char *path, SysmonRules *out) {
                 
                 const char *sevAttr = group->Attribute("severity");
                 rule->severity = sevAttr ? atoi(sevAttr) : 50;
-                
+
                 rule->conditionCount++;
             }
             
@@ -71,6 +71,11 @@ extern "C" int Rules_LoadFromFile(const char *path, SysmonRules *out) {
 }
 
 extern "C" int Rules_MatchProcessCreate(const SysmonRules *rules, const char *parentImage, const char *image) {
+    FILE *f = fopen("C:\\Antivirus_loukoum\\service.log", "a");
+    if (f) { 
+        fprintf(f, "MATCH TRY: parent='%s' image='%s'\n", parentImage, image); 
+        fclose(f); 
+    }
     for (int i = 0; i < rules->ruleCount; i++) {
         const SysmonRule *rule = &rules->rules[i];
         if (rule->type != RULE_PROCESS_CREATE) continue;
@@ -93,7 +98,7 @@ extern "C" int Rules_MatchProcessCreate(const SysmonRules *rules, const char *pa
             } else if (strcmp(cond->condition, "end with") == 0) {
                 size_t tlen = strlen(target);
                 size_t vlen = strlen(cond->value);
-                matches = (tlen >= vlen && strcmp(target + tlen - vlen, cond->value) == 0);
+                matches = (tlen >= vlen && _stricmp(target + tlen - vlen, cond->value) == 0);
             } else if (strcmp(cond->condition, "contains") == 0) {
                 matches = (strstr(target, cond->value) != NULL);
             }
