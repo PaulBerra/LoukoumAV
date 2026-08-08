@@ -77,6 +77,7 @@ C:\vcpkg\vcpkg install mbedtls:x64-windows-static
 C:\vcpkg\vcpkg install yara:x64-windows-static
 C:\vcpkg\vcpkg install cjson:x64-windows-static
 C:\vcpkg\vcpkg install tinyxml2:x64-windows-static
+C:\vcpkg\vcpkg install pthread:x64-windows-static
 ```
 
 ## Usage
