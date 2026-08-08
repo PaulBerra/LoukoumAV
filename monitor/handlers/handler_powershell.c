@@ -4,12 +4,12 @@
 
 void Handler_PowerShell(PEVENT_RECORD event) {
     // Buffer pour stocker le contenu réel du script récupéré
-    char scriptBuffer[32500] = {0}; 
+    char scriptBuffer[MAX_SCRIPT_SIZE] = {0}; 
     
     // Appel avec un buffer valide pour extraire les données
-    int status = psh_getScriptBlockDetails(event, scriptBuffer, sizeof(scriptBuffer));
+    int status = psh_GetScriptBlockDetails(event, scriptBuffer, sizeof(scriptBuffer));
     
-    FILE *f = fopen(SERVICE_LOGFILE, "a");
+    FILE *f = fopen(POWERSHELL_SCRIPTLOGGING_LOGFILE, "a");
     if (f) { 
         if (status == 0) {
             // Succès : C'est un Event 4104 et le texte a été extrait

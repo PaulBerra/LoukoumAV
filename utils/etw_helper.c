@@ -37,7 +37,7 @@ int Etw_GetPropertyString(PEVENT_RECORD event, LPCWSTR propertyName, char *out, 
     return 0;
 }
 
-int psh_getScriptBlockDetails(PEVENT_RECORD event, char *out, size_t outSize) {
+int psh_GetScriptBlockDetails(PEVENT_RECORD event, char *out, size_t outSize) {
     if (!out || outSize == 0) return -1;
     out[0] = '\0';
 
