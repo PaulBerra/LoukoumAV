@@ -1,0 +1,11 @@
+<Sysmon schemaversion="4.30">
+  <EventFiltering>
+    <RuleGroup name="test_notepad" groupRelation="or">
+      <ProcessCreate onmatch="include">
+        <Rule groupRelation="and">
+          <Image condition="end with">notepad.exe</Image>
+        </Rule>
+      </ProcessCreate>
+    </RuleGroup>
+  </EventFiltering>
+</Sysmon>

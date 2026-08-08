@@ -72,7 +72,7 @@ static int LoadSingleFile(const char *path, SysmonRules *out, const MitreMap *mi
                      ruleElem != nullptr;
                      ruleElem = ruleElem->NextSiblingElement("Rule")) {
                     
-                    if (out->ruleCount >= 2048) return 0;
+                    if (out->ruleCount >= MAX_RULES) return 0;
                     
                     SysmonRule *rule = &out->rules[out->ruleCount];
                     rule->type = ruleType;
