@@ -17,7 +17,8 @@
 #define RULES_DIR "C:\\Antivirus_loukoum\\rules\\sysmon\\"
 #define MITRE_CSV_PATH "C:\\Antivirus_loukoum\\rules\\sysmon\\mitre_severity.csv"
 #define MAX_RULES 8192
-
+#define POWERSHELL_SCRIPTLOGGING_LOGFILE "C:\\Antivirus_loukoum\\service_powershell.log"
+#define MAX_SCRIPT_SIZE 32768
 
 static const char *SUSPICIOUS_IMPORTS[] = {
     "VirtualAlloc", "VirtualProtect",

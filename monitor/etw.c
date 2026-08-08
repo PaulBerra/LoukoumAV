@@ -1,14 +1,15 @@
 // etw router
 #include "etw.h"
-#include "handlers/handler_kernel_process.h"
-#include <stdio.h>
-#include "core/service.h"
+
 
 static const GUID ProviderKernelProcess = 
     { 0x22FB2CD6, 0x0E7B, 0x422B, {0xA0, 0xC7, 0x2F, 0xAD, 0x1F, 0xD0, 0xE7, 0x16} };
 
 static const GUID ProviderThreatIntelligence = 
     { 0xF4E1897C, 0xBB5D, 0x5668, {0xF1, 0xD8, 0x04, 0x0F, 0x4D, 0x8D, 0xD3, 0x44} };
+
+static const GUID ProviderPowerShell = 
+    { 0xA0C1853B, 0x5C40, 0x4B15, {0x87, 0x66, 0x3C, 0xF1, 0xC5, 0x8F, 0x98, 0x5A} };
 
 static TRACEHANDLE g_sessionHandle = 0;
 static EVENT_TRACE_PROPERTIES *g_pSessionProperties = NULL;
@@ -22,20 +23,35 @@ static volatile int g_tiEnabled = 0;
 static HANDLE g_etwRetryThread = NULL;
 static volatile int g_etwEnabled = 0;
 
-static void WINAPI EtwEventCallback(PEVENT_RECORD event) {
+static HANDLE g_pshRetryThread = NULL;
+static volatile int g_pshEnabled = 0;
 
-    // Dispatch selon le provider GUID
+static void WINAPI EtwEventCallback(PEVENT_RECORD event) {
+    /*
+    Callback function for ETW events. Dispatches events to the appropriate handler based on the provider GUID.
+    Parameters:
+        event: Pointer to the EVENT_RECORD structure containing the event data.
+    */
+
+    // Dispatch events based on the provider GUID
     if (IsEqualGUID(&event->EventHeader.ProviderId, &ProviderKernelProcess)) {
         Handler_KernelProcess(event);
     }
     else if (IsEqualGUID(&event->EventHeader.ProviderId, &ProviderThreatIntelligence)) {
         Handler_ThreatIntel(event);
     }
-    // else if pour les autres handlers plus tard
+    else if (IsEqualGUID(&event->EventHeader.ProviderId, &ProviderPowerShell)) {
+        Handler_PowerShell(event);
+    }
+    // Add more providers and their handlers as needed
 }
 
 
 static DWORD WINAPI EtwTiRetryThread(LPVOID param) {
+    /*
+    Retry enabling the Threat Intelligence ETW provider every 5 minutes until successful or service stops.
+    Returns 0 on success, non-zero on failure.
+     */
     while (!g_tiEnabled) {
         DWORD wait = WaitForSingleObject(g_serviceStopEvent, 5 * 60 * 1000);
         if (wait == WAIT_OBJECT_0) return 0;  // service stopped
@@ -57,6 +73,10 @@ static DWORD WINAPI EtwTiRetryThread(LPVOID param) {
 }
 
 static DWORD WINAPI EtwRetryThread(LPVOID param) {
+    /*
+    Retry enabling the ETW provider every 5 minutes until successful or service stops.
+    Returns 0 on success, non-zero on failure.
+     */
     while (!g_etwEnabled) {
 
         DWORD wait = WaitForSingleObject(g_serviceStopEvent, 5 * 60 * 1000);
@@ -81,8 +101,40 @@ static DWORD WINAPI EtwRetryThread(LPVOID param) {
     return 0;
 }
 
+static DWORD WINAPI EtwPshRetryThread(LPVOID param) {
+    /*
+    Retry enabling the PowerShell ETW provider every 5 minutes until successful or service stops.
+    Returns 0 on success, non-zero on failure.
+    */
+    while (!g_pshEnabled) {
+
+        DWORD wait = WaitForSingleObject(g_serviceStopEvent, 5 * 60 * 1000);
+        if (wait == WAIT_OBJECT_0) return 0;  // service stopped
+
+        ULONG status = EnableTraceEx2(g_sessionHandle, 
+            &ProviderPowerShell, 
+            EVENT_CONTROL_CODE_ENABLE_PROVIDER, 
+            TRACE_LEVEL_VERBOSE,
+            0x1000000000000000,
+            0,
+            0,
+            NULL
+        );
+
+        if (status == ERROR_SUCCESS) {
+            g_pshEnabled = 1;
+            FILE *f = fopen(SERVICE_LOGFILE, "a");
+            if (f) { fprintf(f, "ETW_PSH: enabled after retry\n"); fclose(f); }
+        }
+    }
+    return 0;
+}
 
 int ETW_Start(void){
+    /*
+    Start an ETW session and enable the necessary providers.
+    Returns 0 on success, non-zero on failure.
+    */
     FILE *f;
     f = fopen(SERVICE_LOGFILE, "a"); if (f) { fprintf(f, "ETW_Start: entered\n"); fclose(f); }
 
@@ -128,6 +180,28 @@ int ETW_Start(void){
     }
     printf(L"ETW session '%s' started successfully.\n", g_sessionName);
 
+
+    status = EnableTraceEx2(g_sessionHandle, 
+        &ProviderPowerShell, 
+        EVENT_CONTROL_CODE_ENABLE_PROVIDER, 
+        TRACE_LEVEL_VERBOSE,
+        0x1000000000000000,
+        0,
+        0,
+        NULL
+    );
+    f = fopen(SERVICE_LOGFILE, "a"); if (f) { fprintf(f, "ETW_PSH_Start: EnableTraceEx2 status=%lu\n", status); fclose(f); }
+    if (status == ERROR_SUCCESS) {
+        g_pshEnabled = 1;
+    } else {
+        fprintf(f, "EnableTraceEx2 for PowerShell ETW failed with error: %lu\n", status);
+        // Start a retry thread for PowerShell provider
+        g_pshRetryThread = CreateThread(NULL, 0, EtwPshRetryThread, NULL, 0, NULL);
+        if (!g_pshRetryThread) {
+            fprintf(f, "Failed to create retry thread for PowerShell provider.\n");
+        }
+    }
+
     status = EnableTraceEx2(g_sessionHandle, 
         &ProviderKernelProcess, 
         EVENT_CONTROL_CODE_ENABLE_PROVIDER, 
@@ -169,13 +243,6 @@ int ETW_Start(void){
         }
     }
 
-
-
-
-
-
-
-
     EVENT_TRACE_LOGFILEW logFile = {0};
     logFile.LoggerName = g_sessionName;
     logFile.ProcessTraceMode = PROCESS_TRACE_MODE_REAL_TIME | PROCESS_TRACE_MODE_EVENT_RECORD;
@@ -186,10 +253,18 @@ int ETW_Start(void){
 
     status = ProcessTrace(&consumer, 1, NULL, NULL);  // bloque jusqu'à Stop
     f = fopen(SERVICE_LOGFILE, "a"); if (f) { fprintf(f, "ETW_Start: ProcessTrace returned status=%lu\n", status); fclose(f); }
+    
 
     return 0;
 }
+
+
 int ETW_Stop(void){
+    /*
+    Stop the ETW session and clean up resources.
+    Returns 0 on success, non-zero on failure. 
+    */
+
     FILE *f = fopen(SERVICE_LOGFILE, "a"); 
     if (f) { fprintf(f, "ETW_Stop called\n"); fclose(f); }
 

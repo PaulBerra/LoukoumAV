@@ -36,3 +36,30 @@ int Etw_GetPropertyString(PEVENT_RECORD event, LPCWSTR propertyName, char *out, 
     free(tmp);
     return 0;
 }
+
+int psh_GetScriptBlockDetails(PEVENT_RECORD event, char *out, size_t outSize) {
+    if (!out || outSize == 0) return -1;
+    out[0] = '\0';
+
+    // Validation : l'ID 4104 correspond au Script Block Logging
+    if (event->EventHeader.EventDescriptor.Id != 4104) {
+        return -1;
+    }
+
+    char path[MAX_PATH] = {0};
+    Etw_GetPropertyString(event, L"Path", path, sizeof(path));
+
+    if (path[0] != '\0') {
+        char scriptBuffer[8192] = {0}; 
+        
+        if (Etw_GetPropertyString(event, L"ScriptBlockText", scriptBuffer, sizeof(scriptBuffer)) == 0) {
+            snprintf(out, outSize, "[File: %s]\n%s", path, scriptBuffer);
+            return 0;
+        }
+    } else {
+        // Exécution en mémoire (dropper, Invoke-Expression, etc.) : écriture directe
+        return Etw_GetPropertyString(event, L"ScriptBlockText", out, outSize);
+    }
+
+    return -1;
+}
