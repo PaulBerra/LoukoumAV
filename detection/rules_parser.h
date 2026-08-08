@@ -2,6 +2,7 @@
 #define RULES_PARSER_H
 
 #include "mitre.h"
+#include "utils/config.h"
 
 typedef enum {
     RULE_PROCESS_CREATE,
@@ -43,7 +44,7 @@ typedef struct {
 } SysmonRule;
 
 typedef struct {
-    SysmonRule rules[2048];
+    SysmonRule rules[MAX_RULES];
     int ruleCount;
 } SysmonRules;
 

@@ -16,6 +16,7 @@
 #define SERVICE_LOGFILE "C:\\Antivirus_loukoum\\service.log"
 #define RULES_DIR "C:\\Antivirus_loukoum\\rules\\sysmon\\"
 #define MITRE_CSV_PATH "C:\\Antivirus_loukoum\\rules\\sysmon\\mitre_severity.csv"
+#define MAX_RULES 8192
 
 
 static const char *SUSPICIOUS_IMPORTS[] = {
